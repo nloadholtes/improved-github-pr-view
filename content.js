@@ -78,6 +78,15 @@
     return maxBottom;
   }
 
+  function getPageBackground() {
+    // getComputedStyle is required — inline CSS var() references don't reliably resolve.
+    const css = getComputedStyle(document.documentElement)
+      .getPropertyValue('--color-canvas-default').trim();
+    if (css) return css;
+    const bodyBg = getComputedStyle(document.body).backgroundColor;
+    return (bodyBg && bodyBg !== 'rgba(0, 0, 0, 0)') ? bodyBg : '#ffffff';
+  }
+
   function setupStickyTabs() {
     const nav = findPRTabNav();
     if (!nav || nav.dataset.prStickySetup) return;
@@ -95,7 +104,7 @@
     function stick(topPx) {
       stuck = true;
       placeholder.style.display = 'block';
-      nav.style.cssText = `position:fixed; top:${topPx}px; left:0; right:0; width:auto; z-index:200; background-color:var(--color-canvas-default,#ffffff); box-shadow:0 1px 0 var(--color-border-default,#d0d7de);`;
+      nav.style.cssText = `position:fixed; top:${topPx}px; left:0; right:0; width:auto; z-index:200; background-color:${getPageBackground()}; box-shadow:0 1px 0 var(--color-border-default,#d0d7de);`;
     }
 
     function unstick() {
