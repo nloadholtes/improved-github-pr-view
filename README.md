@@ -53,6 +53,10 @@ When a new tab finishes loading (`turbo:load`), the saved position for that URL 
 
 GitHub uses Turbo (formerly Turbolinks) for in-page navigation. The extension listens to both `turbo:*` events and legacy `pjax:*` events so it works regardless of which navigation mechanism GitHub uses on a given page. On each navigation the sticky setup is fully torn down and re-initialised, which also correctly handles the tab bar being re-rendered with new DOM nodes.
 
+## License
+
+MIT
+
 ## Limitations
 
 - GitHub's HTML structure and CSS class names can change at any time. The extension uses a few class-name substrings (e.g. `stickyHeader`) that could break if GitHub renames their CSS modules.
