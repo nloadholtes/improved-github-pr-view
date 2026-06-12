@@ -8,18 +8,23 @@
     if (window.scrollY > 0) sessionStorage.setItem(scrollKey(), window.scrollY);
   }
 
+  let lastRestoredPath = null;
+
   function restoreScroll() {
+    const path = location.pathname;
+    if (path === lastRestoredPath) return;
+    lastRestoredPath = path;
     const saved = sessionStorage.getItem(scrollKey());
     if (!saved) return;
     const y = parseInt(saved, 10);
-    setTimeout(() => window.scrollTo(0, y), 80);
-    let userScrolled = false;
-    const guard = () => { userScrolled = true; };
-    window.addEventListener('scroll', guard, { passive: true, once: true });
+    if (y <= 0) return;
+    // Retry at 400ms in case page content wasn't laid out at 100ms.
+    // No scroll-event guard — our own scrollTo fires a scroll event and would
+    // incorrectly set userScrolled before the retry check.
     setTimeout(() => {
-      window.removeEventListener('scroll', guard);
-      if (!userScrolled && Math.abs(window.scrollY - y) > 150) window.scrollTo(0, y);
-    }, 700);
+      window.scrollTo(0, y);
+      setTimeout(() => { if (Math.abs(window.scrollY - y) > 100) window.scrollTo(0, y); }, 400);
+    }, 100);
   }
 
   function findPRTabNav() {
@@ -177,9 +182,19 @@
     document.addEventListener(arriveEvent, () => { watchForNav(); restoreScroll(); });
   }
 
+  // Capture-phase click handler catches Turbo Frame navigations, which don't fire
+  // turbo:before-visit, so saveScroll() would otherwise never run for PR tab clicks.
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href]');
+    if (link && e.target.closest('nav')) saveScroll();
+  }, true);
+
   window.addEventListener('beforeunload', saveScroll);
   registerSPAFramework('turbo:before-visit', 'turbo:load');
   registerSPAFramework('pjax:send', 'pjax:end');
+  // Turbo Frame navigations (GitHub PR tabs) don't fire turbo:before-visit or
+  // always turbo:load — frame-load fires reliably when the frame finishes rendering.
+  document.addEventListener('turbo:frame-load', () => { watchForNav(); restoreScroll(); });
 
   watchForNav();
   restoreScroll();

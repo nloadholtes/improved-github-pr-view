@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GitHub PR Enhanced Navigation",
   "description": "Keeps PR tabs sticky at the top and restores your scroll position when switching between tabs.",
-  "version": "1.1",
+  "version": "1.2",
   "content_scripts": [
     {
       "matches": [
